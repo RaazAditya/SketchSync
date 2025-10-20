@@ -1,28 +1,27 @@
-// models/Board.js
 import mongoose from "mongoose";
 
 const boardSchema = new mongoose.Schema(
   {
-    room: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Room",
-      required: true,
+    title: {
+      type: String,
+      default: "Untitled Board",
     },
-    data: {
-      type: Object, // Fabric.js JSON structure
-      required: true,
-    },
-    lastModifiedBy: {
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
-    snapshots: [
+    collaborators: [
       {
-        data: Object, // for replay or undo-redo
-        timestamp: { type: Date, default: Date.now },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
-    lastSaved: {
+    data: {
+      type: Object, // fabric.js canvas JSON
+      default: {},
+    },
+    lastEdited: {
       type: Date,
       default: Date.now,
     },

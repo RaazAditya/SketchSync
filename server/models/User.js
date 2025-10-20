@@ -1,5 +1,10 @@
-// models/User.js
+// backend/src/models/User.js
 import mongoose from "mongoose";
+
+const participantSchema = new mongoose.Schema(
+  {},
+  { _id: false } // not using participants here; placeholder if needed later
+);
 
 const userSchema = new mongoose.Schema(
   {
@@ -7,6 +12,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      index: true,
     },
     name: {
       type: String,
@@ -18,25 +24,21 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
+      index: true,
     },
     avatar: {
-      type: String, // Google profile picture URL
+      type: String,
     },
     locale: {
-      type: String, // 'en', 'hi', etc.
+      type: String,
     },
     timezone: {
-      type: String, // Optional, useful for notifications or time-based replay
+      type: String,
     },
     lastActive: {
       type: Date,
       default: Date.now,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    // For quick access control
     roles: {
       type: [String],
       enum: ["user", "admin"],
@@ -46,4 +48,5 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+export default User;

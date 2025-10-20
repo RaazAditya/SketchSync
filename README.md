@@ -1,4 +1,4 @@
-# 🧠 CollabBoard
+# 🧠 SketchSync
 
 A **real-time collaborative whiteboard platform** built with **React**, **Shadcn UI**, **Fabric.js**, and **MongoDB**, designed for seamless team collaboration — draw, chat, and brainstorm together in one place.
 
