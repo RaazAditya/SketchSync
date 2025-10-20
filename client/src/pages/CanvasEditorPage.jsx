@@ -1,68 +1,57 @@
 // src/pages/CanvasEditorPage.jsx
 import React, { useRef, useState } from "react";
-import { Share2 } from "lucide-react"; // Import Share icon here
+// Import icon for the new button
+import { Share2, MessageSquare } from "lucide-react"; 
 import CanvasToolbar from "../components/board/CanvasToolbar";
 import CanvasContainer from "../components/board/CanvasContainer";
 
-// Import the new modular hooks
+// Import the new Panel component
+import RealtimePanel from "../components/realtime/RealtimePanel";
+
+// Import hooks (no change here)
 import { useCanvasActions } from "../hooks/useCanvasActions";
 import { useCanvasPersistence } from "../hooks/useCanvasPersistence";
 import { useCanvasUtils } from "../hooks/useCanvasUtils";
+import { useSocket } from "../hooks/useSocket";
 
 const CanvasEditorPage = () => {
   const [canvas, setCanvas] = useState(null);
   const canvasRef = useRef(null);
-  const imageInputRef = useRef(null); // Ref for the hidden file input
+  const imageInputRef = useRef(null);
 
-  // Use the custom hooks
+  // 💫 NEW STATE to manage the pop-up
+  const [isRealtimePanelOpen, setIsRealtimePanelOpen] = useState(false);
+
+  // --- Hooks (all the same) ---
   const {
-    addRectangle,
-    addCircle,
-    addText,
-    addImage, // Get the new addImage function
-    enableSelectMode,
-    enablePencil,
-    enableEraser,
+    addRectangle, addCircle, addText, addImage,
+    enableSelectMode, enablePencil, enableEraser,
   } = useCanvasActions(canvas);
-  
   const { saveCanvas, loadCanvas } = useCanvasPersistence(canvas);
   const { shareCanvas } = useCanvasUtils(canvas);
+  const { messages, activeUsers, sendMessage } = useSocket();
 
-  // This function is passed to the toolbar button
-  const triggerImageUpload = () => {
-    imageInputRef.current.click();
-  };
-
-  // This function handles the file selection
+  // --- Helper Functions (all the same) ---
+  const triggerImageUpload = () => imageInputRef.current.click();
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      addImage(dataUrl); // Call the hook function with the image data
-    };
+    reader.onload = (event) => addImage(event.target.result);
     reader.readAsDataURL(file);
-
-    // Reset the input value to allow uploading the same file again
     e.target.value = null;
   };
-  
-  // Define the button class here for the Share button
+
   const buttonClass =
     "flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 hover:border-cyan-400 hover:text-cyan-300 transition-all duration-200 shadow-md hover:shadow-cyan-500/30";
 
   return (
-    <div className="relative h-[200vh] w-full text-white flex flex-col">
-      {/* This div groups the Share button and the Toolbar.
-        It's centered, and items are aligned to the top.
-      */}
-      <div className="absolute  top-4 left-1/2 -translate-x-1/2 z-10 flex items-center justify-around gap-4">
-
-        {/* Main Toolbar */}
+    // MODIFIED: Removed flex-row, back to a simple relative container
+    <div className="relative h-full w-full text-white flex flex-col">
+      
+      {/* Toolbar (Stays centered at top) */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <CanvasToolbar
-          // Pass all the new props
           enableSelectMode={enableSelectMode}
           enablePencil={enablePencil}
           enableEraser={enableEraser}
@@ -72,10 +61,10 @@ const CanvasEditorPage = () => {
           triggerImageUpload={triggerImageUpload}
           saveCanvas={saveCanvas}
           loadCanvas={loadCanvas}
-          // No shareCanvas prop
         />
-        {/* Share Button (now separate) */}
       </div>
+
+      {/* Share Button (Top right) */}
       <div className="absolute top-6 right-3 z-10">
         <button onClick={shareCanvas} className={buttonClass}>
           <Share2 size={15} />
@@ -83,10 +72,33 @@ const CanvasEditorPage = () => {
         </button>
       </div>
 
-      {/* Canvas container fills the entire space */}
-      <CanvasContainer ref={canvasRef} setCanvas={setCanvas} />
-      
-      {/* Hidden file input for image uploads */}
+      {/* 1. Main Canvas Area (now takes full width) */}
+      <div className="flex-1 h-full">
+        <CanvasContainer ref={canvasRef} setCanvas={setCanvas} />
+      </div>
+
+      {/* 2. 💫 Real-time Panel (Renders conditionally) 💫 */}
+      {isRealtimePanelOpen && (
+        <RealtimePanel
+          messages={messages}
+          activeUsers={activeUsers}
+          onSendMessage={sendMessage}
+          onClose={() => setIsRealtimePanelOpen(false)}
+        />
+      )}
+
+      {/* 3. 💫 Real-time Toggle Button 💫 */}
+      {!isRealtimePanelOpen && (
+        <button
+          onClick={() => setIsRealtimePanelOpen(true)}
+          className={`${buttonClass} absolute bottom-5 right-5 z-20 !rounded-full !p-3`}
+          title="Chat and Users"
+        >
+          <MessageSquare size={24} />
+        </button>
+      )}
+
+      {/* Hidden file input (no change) */}
       <input
         type="file"
         ref={imageInputRef}

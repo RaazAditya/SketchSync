@@ -18,6 +18,7 @@ const defaultObjectProps = {
 export const useCanvasActions = (canvas) => {
   // --- Shape Tools ---
 
+
   const addRectangle = () => {
     if (!canvas) return;
     canvas.isDrawingMode = false;
